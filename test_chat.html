@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Web-KI Test</title>
+</head>
+<body>
+  <h2>Test deiner Web-KI</h2>
+  <div id="messages" style="border:1px solid #ccc; padding:10px; width:400px; height:200px; overflow-y:auto;">
+    <div><strong>KI:</strong> Hallo! Wie kann ich helfen?</div>
+  </div>
+  <br>
+  <input id="msg" type="text" placeholder="Nachricht eingeben..." style="width:300px;">
+  <button onclick="sendMessage()">Senden</button>
+
+  <script>
+    const KI_API_URL = "http://127.0.0.1:5000/chat"; // deine laufende KI
+
+    async function sendMessage() {
+      const input = document.getElementById("msg");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const messages = document.getElementById("messages");
+
+      // Nutzer-Nachricht anzeigen
+      const userDiv = document.createElement("div");
+      userDiv.innerHTML = "<strong>Du:</strong> " + text;
+      messages.appendChild(userDiv);
+      messages.scrollTop = messages.scrollHeight;
+      input.value = "";
+
+      // KI schreibt...
+      const typingDiv = document.createElement("div");
+      typingDiv.innerHTML = "<em>KI schreibt...</em>";
+      messages.appendChild(typingDiv);
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const response = await fetch(KI_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await response.json();
+
+        messages.removeChild(typingDiv);
+
+        const botDiv = document.createElement("div");
+        botDiv.innerHTML = "<strong>KI:</strong> " + (data.reply || "Fehler bei der Antwort.");
+        messages.appendChild(botDiv);
+        messages.scrollTop = messages.scrollHeight;
+      } catch (err) {
+        messages.removeChild(typingDiv);
+        const errorDiv = document.createElement("div");
+        errorDiv.innerHTML = "<strong>KI:</strong> Es ist ein Fehler aufgetreten.";
+        messages.appendChild(errorDiv);
+        messages.scrollTop = messages.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
